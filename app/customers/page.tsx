@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { getDb } from "@/db/sqlite";
 import { customers, invoices } from "@/db/schema.sqlite";
 import { getSessionUser } from "@/lib/auth";
@@ -25,10 +25,19 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     .orderBy(customers.name)
     .all();
 
-  // Initialize invoice counts per customer (0 until invoices are created).
-  const customerInvoiceCounts = new Map(
-    allCustomers.map(c => [c.id, 0] as const),
+  // --- QUERY actual invoice counts grouped by customerId ---
+  const countRows = db
+    .select({ customerId: invoices.customerId, count: count() })
+    .from(invoices)
+    .groupBy(invoices.customerId)
+    .all();
+
+  const customerInvoiceCounts = new Map<string, number>(
+    allCustomers.map(c => [c.id, 0]),
   );
+  for (const row of countRows) {
+    if (row.customerId) customerInvoiceCounts.set(row.customerId, row.count ?? 0);
+  }
 
   // --- FILTERED display ---
   const displayed = search
@@ -76,7 +85,9 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             <tbody>
               {displayed.map((c) => (
                 <tr key={c.id}>
-                  <td>{c.name}</td>
+                  <td>
+                    <Link href={`/customers/${c.id}`} className="link">{c.name}</Link>
+                  </td>
                   <td>{c.phone ?? "—"}</td>
                   <td>{c.email ?? "—"}</td>
                   <td>{customerInvoiceCounts.get(c.id) ?? 0}</td>
