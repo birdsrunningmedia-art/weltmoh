@@ -10,13 +10,17 @@
     "lint": "next lint",
     "db:generate-sqlite": "drizzle-kit generate --config=drizzle.sqlite.config.ts",
     "db:generate-pg": "drizzle-kit generate --config=drizzle.pg.config.ts",
-    "db:migrate-sqlite": "tsx scripts/migrate-sqlite.ts"
+    "db:migrate-sqlite": "tsx scripts/migrate-sqlite.ts",
+    "db:migrate-pg": "tsx scripts/migrate-neon.ts"
   },
+
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.4.1",
     "drizzle-orm": "^0.44.5",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -24,8 +28,8 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/bcryptjs": "^3.0.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
