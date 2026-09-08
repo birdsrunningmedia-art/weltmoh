@@ -77,6 +77,8 @@ export default async function InvoiceEditPage({ params }: PageProps) {
             date: invoice.date,
             lpoNumber: invoice.lpoNumber ?? "",
             invoiceDetails: invoice.invoiceDetails,
+            additionalInfo: invoice.additionalInfo ?? "",
+            taxPercent: invoice.taxPercent ?? 0,
             items: formattedItems,
           }}
         />

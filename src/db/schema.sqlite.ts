@@ -61,6 +61,8 @@ export const invoices = sqliteTable(
     date: text("date").notNull(), // ISO-8601
     lpoNumber: text("lpo_number"),
     invoiceDetails: text("invoice_details").notNull(),
+    additionalInfo: text("additional_info"),
+    taxPercent: integer("tax_percent").notNull().default(0),
     totalKobo: integer("total_kobo").notNull(),
     isVoid: integer("is_void", { mode: "boolean" }).notNull().default(false),
     voidReason: text("void_reason"),

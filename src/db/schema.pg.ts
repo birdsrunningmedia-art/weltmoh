@@ -66,6 +66,8 @@ export const invoices = pgTable(
     date: timestamp("date").notNull(),
     lpoNumber: text("lpo_number"),
     invoiceDetails: text("invoice_details").notNull(),
+    additionalInfo: text("additional_info"),
+    taxPercent: integer("tax_percent").notNull().default(0),
     totalKobo: bigint("total_kobo", { mode: "number" }).notNull(),
     isVoid: boolean("is_void").notNull().default(false),
     voidReason: text("void_reason"),

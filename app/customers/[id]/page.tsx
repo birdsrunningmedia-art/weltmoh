@@ -5,6 +5,7 @@ import { getDb } from "@/db/sqlite";
 import { customers, invoices } from "@/db/schema.sqlite";
 import { getSettings } from "@/lib/settings";
 import { koboToNaira, formatInvoiceNo } from "@/lib/money";
+import { updateCustomer } from "../actions";
 import { eq, desc } from "drizzle-orm";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,6 +68,24 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <tr><th>Created</th><td>{new Date(customer.createdAt).toLocaleString()}</td></tr>
           </tbody>
         </table>
+      </section>
+
+      <section>
+        <h3 style={{ margin: "16px 0 8px" }}>Edit Customer</h3>
+        <form action={updateCustomer}>
+          <input type="hidden" name="id" value={customer.id} />
+          <label htmlFor="c-name">Name *</label>
+          <input id="c-name" name="name" defaultValue={customer.name} required />
+          <label htmlFor="c-phone">Contact (Phone)</label>
+          <input id="c-phone" name="phone" defaultValue={customer.phone ?? ""} />
+          <label htmlFor="c-email">Email</label>
+          <input id="c-email" name="email" type="email" defaultValue={customer.email ?? ""} />
+          <label htmlFor="c-address">Location (Address)</label>
+          <input id="c-address" name="address" defaultValue={customer.address ?? ""} />
+          <label htmlFor="c-notes">Notes</label>
+          <textarea id="c-notes" name="notes" rows={2} defaultValue={customer.notes ?? ""} />
+          <button type="submit">Update customer</button>
+        </form>
       </section>
 
       <section>

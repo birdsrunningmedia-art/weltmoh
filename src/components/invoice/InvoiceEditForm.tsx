@@ -33,6 +33,8 @@ export type InvoiceEditFormProps = {
     date: string;
     lpoNumber: string;
     invoiceDetails: string;
+    additionalInfo?: string;
+    taxPercent?: number;
     items: LineItem[];
   };
 };
@@ -48,6 +50,8 @@ export function InvoiceEditForm({
   const [date, setDate] = useState(initialData.date);
   const [lpoNumber, setLpoNumber] = useState(initialData.lpoNumber);
   const [invoiceDetails, setInvoiceDetails] = useState(initialData.invoiceDetails);
+  const [additionalInfo, setAdditionalInfo] = useState(initialData.additionalInfo || "");
+  const [taxPercent, setTaxPercent] = useState(String(initialData.taxPercent ?? 0));
   const [items, setItems] = useState<LineItem[]>(
     initialData.items.length > 0 ? initialData.items : [emptyItem()],
   );
@@ -107,6 +111,8 @@ export function InvoiceEditForm({
         date,
         lpoNumber,
         invoiceDetails,
+        additionalInfo: additionalInfo.trim() || undefined,
+        taxPercent: Number(taxPercent) || 0,
         items: parsedItems,
       });
 
@@ -189,6 +195,32 @@ export function InvoiceEditForm({
           onChange={(e) => setInvoiceDetails(e.target.value)}
           required
           rows={3}
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        />
+      </div>
+
+      {/* Additional Info */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="additionalInfo">Additional Information (optional)</label>
+        <textarea
+          id="additionalInfo"
+          value={additionalInfo}
+          onChange={(e) => setAdditionalInfo(e.target.value)}
+          rows={2}
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        />
+      </div>
+
+      {/* Tax Percent */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="taxPercent">Tax Percent (%)</label>
+        <input
+          id="taxPercent"
+          type="number"
+          min={0}
+          max={100}
+          value={taxPercent}
+          onChange={(e) => setTaxPercent(e.target.value)}
           style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
         />
       </div>

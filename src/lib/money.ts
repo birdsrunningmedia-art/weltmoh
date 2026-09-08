@@ -29,6 +29,15 @@ export function formatInvoiceNo(prefix: string, n: number): string {
   return `${prefix}${String(n).padStart(4, "0")}`;
 }
 
+/** Compute subtotal, tax amount (in kobo) and total with tax given items subtotal and percent. */
+export function computeTaxBreakdown(subtotalKobo: number, taxPercent: number): { subtotal: number; taxAmount: number; total: number } {
+  if (!Number.isInteger(subtotalKobo) || subtotalKobo < 0) throw new Error(`Invalid subtotal: ${subtotalKobo}`);
+  if (taxPercent < 0 || taxPercent > 100) throw new Error(`Invalid tax percent: ${taxPercent}`);
+  const taxAmount = Math.round(subtotalKobo * (taxPercent / 100));
+  const total = subtotalKobo + taxAmount;
+  return { subtotal: subtotalKobo, taxAmount, total };
+}
+
 /** Sum integer kobo amounts (throws on non-integers). */
 export function sumKobo(amounts: number[]): number {
   let total = 0;

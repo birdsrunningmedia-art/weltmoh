@@ -6,7 +6,7 @@ import { customers, invoices } from "@/db/schema.sqlite";
 import { getSessionUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { koboToNaira, formatInvoiceNo } from "@/lib/money";
-import { saveCustomer } from "./actions";
+
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const user = await getSessionUser();
@@ -57,11 +57,9 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           ← Dashboard
         </Link>
         {user.role === "OWNER" && (
-          <form action={saveCustomer}>
-            <label htmlFor="c-name">Name</label>
-            <input id="c-name" name="name" required autoComplete="name" />
-            <button type="submit">Save customer</button>
-          </form>
+          <Link className="btn secondary" href="/customers/new">
+            + New Customer
+          </Link>
         )}
       </header>
 

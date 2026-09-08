@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb } from "@/db/sqlite";
 import { businessSettings, customers, invoices, invoiceItems } from "@/db/schema.sqlite";
-import { sumKobo } from "@/lib/money";
+import { sumKobo, computeTaxBreakdown } from "@/lib/money";
 import { syncToNeon } from "@/lib/sync";
 
 type LineItemInput = {
@@ -20,6 +20,8 @@ type CreateInvoiceInput = {
   date: string;
   lpoNumber: string;
   invoiceDetails: string;
+  additionalInfo?: string;
+  taxPercent?: number;
   items: LineItemInput[];
 };
 
@@ -35,7 +37,7 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<void> {
   const user = await requireUser();
 
   // Validate required fields
-  const { customerId, date, lpoNumber, invoiceDetails, items } = input;
+  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, items } = input;
 
   if (!customerId || typeof customerId !== "string") {
     throw new Error("Customer is required.");
@@ -66,7 +68,10 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<void> {
     };
   });
 
-  const totalKobo = sumKobo(validatedItems.map((it) => it.amountKobo));
+  const parsedTaxPercent = (typeof taxPercent === "number" && !isNaN(taxPercent)) ? Math.max(0, Math.min(100, Math.round(taxPercent))) : 0;
+
+  const subtotalKobo = sumKobo(validatedItems.map((it) => it.amountKobo));
+  const { total: totalKobo } = computeTaxBreakdown(subtotalKobo, parsedTaxPercent);
 
   const db = getDb();
   const invoiceId = crypto.randomUUID();
@@ -92,6 +97,8 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<void> {
       date,
       lpoNumber: lpoNumber.trim() || null,
       invoiceDetails: invoiceDetails.trim(),
+      additionalInfo: (additionalInfo && typeof additionalInfo === "string" && additionalInfo.trim().length > 0) ? additionalInfo.trim() : null,
+      taxPercent: parsedTaxPercent,
       totalKobo,
       isVoid: false,
       voidReason: null,
@@ -149,7 +156,7 @@ export async function updateInvoice(
     throw new Error("Voided invoices cannot be edited.");
   }
 
-  const { customerId, date, lpoNumber, invoiceDetails, items } = input;
+  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, items } = input;
 
   if (!customerId || typeof customerId !== "string") {
     throw new Error("Customer is required.");
@@ -179,7 +186,10 @@ export async function updateInvoice(
     };
   });
 
-  const totalKobo = sumKobo(validatedItems.map((it) => it.amountKobo));
+  const parsedTaxPercent = (typeof taxPercent === "number" && !isNaN(taxPercent)) ? Math.max(0, Math.min(100, Math.round(taxPercent))) : 0;
+
+  const subtotalKobo = sumKobo(validatedItems.map((it) => it.amountKobo));
+  const { total: totalKobo } = computeTaxBreakdown(subtotalKobo, parsedTaxPercent);
 
   const customer = db
     .select({ id: customers.id })
@@ -197,6 +207,8 @@ export async function updateInvoice(
       date,
       lpoNumber: lpoNumber.trim() || null,
       invoiceDetails: invoiceDetails.trim(),
+      additionalInfo: (additionalInfo && typeof additionalInfo === "string" && additionalInfo.trim().length > 0) ? additionalInfo.trim() : null,
+      taxPercent: parsedTaxPercent,
       totalKobo,
     })
     .where(eq(invoices.id, invoiceId))

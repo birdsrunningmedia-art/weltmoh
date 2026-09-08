@@ -31,6 +31,8 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [lpoNumber, setLpoNumber] = useState("");
   const [invoiceDetails, setInvoiceDetails] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [taxPercent, setTaxPercent] = useState("0");
   const [items, setItems] = useState<LineItem[]>([emptyItem()]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -90,6 +92,8 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
         date,
         lpoNumber,
         invoiceDetails,
+        additionalInfo: additionalInfo.trim() || undefined,
+        taxPercent: Number(taxPercent) || 0,
         items: parsedItems,
       });
       // Server Action redirects on success — if we reach here, navigate manually
@@ -162,6 +166,32 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
           onChange={(e) => setInvoiceDetails(e.target.value)}
           required
           rows={3}
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        />
+      </div>
+
+      {/* Additional Info */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="additionalInfo">Additional Information (optional)</label>
+        <textarea
+          id="additionalInfo"
+          value={additionalInfo}
+          onChange={(e) => setAdditionalInfo(e.target.value)}
+          rows={2}
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        />
+      </div>
+
+      {/* Tax Percent */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="taxPercent">Tax Percent (%)</label>
+        <input
+          id="taxPercent"
+          type="number"
+          min={0}
+          max={100}
+          value={taxPercent}
+          onChange={(e) => setTaxPercent(e.target.value)}
           style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
         />
       </div>

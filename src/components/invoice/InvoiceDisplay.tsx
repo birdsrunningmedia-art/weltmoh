@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import JSPDF from "jspdf";
 
-import { koboToNaira, formatInvoiceNo, amountInWords } from "@/lib/money";
+import { koboToNaira, formatInvoiceNo, amountInWords, computeTaxBreakdown } from "@/lib/money";
 
 import Link from "next/link";
 import { finalizeInvoice, voidInvoice, deleteDraftInvoice } from "../../../app/invoices/actions";
@@ -32,6 +32,8 @@ export type InvoiceDisplayProps = {
   date: string;
   lpoNumber?: string | null;
   invoiceDetails: string;
+  additionalInfo?: string | null;
+  taxPercent?: number;
   items: { qtyLabel: string; description: string; rateKobo: number; amountKobo: number }[];
   totalKobo: number;
   isVoid?: boolean;
@@ -51,6 +53,8 @@ export function InvoiceDisplay({
   date,
   lpoNumber,
   invoiceDetails,
+  additionalInfo,
+  taxPercent,
   items,
   totalKobo,
   isVoid,
@@ -79,8 +83,20 @@ export function InvoiceDisplay({
   const prefix = settings?.invoiceNumberPrefix ?? "WSNLI-";
   const invoiceDisplayNo =
     invoiceNo != null ? formatInvoiceNo(prefix, invoiceNo) : "DRAFT";
-  const totalNaira = koboToNaira(totalKobo);
-  const wordsText = amountInWords(totalKobo);
+
+  const subtotalKobo = items.reduce((sum, it) => sum + it.amountKobo, 0);
+  const taxPercentValue = (typeof taxPercent === "number" && !isNaN(taxPercent)) ? Math.max(0, Math.min(100, Math.round(taxPercent))) : 0;
+  const { subtotal, taxAmount, total: computedTotal } = computeTaxBreakdown(subtotalKobo, taxPercentValue);
+
+  // Show total from props if it differs (backward compat), else use computed
+  const displayTotalKobo = totalKobo;
+  const displaySubtotal = subtotalKobo;
+  const displayTax = Math.round(subtotalKobo * (taxPercentValue / 100));
+
+  const totalNaira = koboToNaira(displayTotalKobo);
+  const subtotalNaira = koboToNaira(displaySubtotal);
+  const taxNaira = koboToNaira(displayTax);
+  const wordsText = amountInWords(displayTotalKobo);
 
   const safeCustomer = customerName.replace(/[^a-zA-Z0-9_-]/g, "_");
   const fileBaseName = `Invoice-${invoiceDisplayNo}-${safeCustomer}`;
@@ -443,9 +459,11 @@ export function InvoiceDisplay({
                   style={{ width: 54, height: 54, objectFit: "contain", borderRadius: 8 }}
                 />
               ) : (
-                <div className="invoice-logo-circle">
-                  <span>WELT</span>
-                </div>
+                <img
+                  src="/logo.svg"
+                  alt={settings?.companyName || "Weltmoh"}
+                  style={{ width: 56, height: 56, objectFit: "contain" }}
+                />
               )}
               <div>
                 <div className="invoice-company-title">
@@ -508,6 +526,14 @@ export function InvoiceDisplay({
             <div className="invoice-details-body">{invoiceDetails}</div>
           </div>
 
+          {/* Additional Details (optional, hidden when empty) */}
+          {additionalInfo && additionalInfo.trim().length > 0 && (
+            <div className="invoice-details-box" style={{ marginTop: 14 }}>
+              <div className="invoice-details-header">ADDITIONAL DETAILS</div>
+              <div className="invoice-details-body">{additionalInfo.trim()}</div>
+            </div>
+          )}
+
           {/* Line Items Table */}
           <div className="invoice-table-box">
             <table className="invoice-table">
@@ -540,9 +566,22 @@ export function InvoiceDisplay({
             </table>
           </div>
 
-          {/* Total Row */}
-          <div className="invoice-total-section">
-            <div className="invoice-total-box">Total: {totalNaira}</div>
+          {/* Subtotal / Tax / Total */}
+          <div className="invoice-total-section" style={{ marginTop: 14, flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
+              <span style={{ fontWeight: 600, color: "#1f2937" }}>Subtotal</span>
+              <span style={{ fontWeight: 600, color: "#1f2937" }}>{subtotalNaira}</span>
+            </div>
+            {taxPercentValue > 0 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
+                <span style={{ fontWeight: 600, color: "#1f2937" }}>Tax({taxPercentValue}%)</span>
+                <span style={{ fontWeight: 600, color: "#1f2937" }}>{taxNaira}</span>
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
+              <span style={{ fontWeight: 800, fontSize: 16, color: "#15803d" }}>Total</span>
+              <span style={{ fontWeight: 800, fontSize: 16, color: "#15803d" }}>{totalNaira}</span>
+            </div>
           </div>
 
           {/* Amount In Words */}
