@@ -81,6 +81,8 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
         date={invoice.date}
         lpoNumber={invoice.lpoNumber}
         invoiceDetails={invoice.invoiceDetails}
+        additionalInfo={invoice.additionalInfo}
+        taxPercent={invoice.taxPercent}
         items={items}
         totalKobo={invoice.totalKobo}
         isVoid={invoice.isVoid}

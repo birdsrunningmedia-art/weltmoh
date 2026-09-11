@@ -42,33 +42,51 @@ async function run() {
   const res = await sql`SELECT 1 as connected;`;
   console.log("Connection successful:", res);
 
-  // Read SQL migration file
-  const migrationPath = path.resolve(process.cwd(), "drizzle-pg", "0000_slow_bishop.sql");
-  if (!fs.existsSync(migrationPath)) {
-    throw new Error("Migration file not found at " + migrationPath);
+  // Read all SQL migration files in drizzle-pg/ in filename order
+  // (0000 base schema, then 0001, 0002, ...). Each file is applied
+  // statement by statement; already-applied statements are skipped so
+  // re-running is safe.
+  const migrationsDir = path.resolve(process.cwd(), "drizzle-pg");
+  const migrationFiles = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+  if (migrationFiles.length === 0) {
+    throw new Error("No migration files found in " + migrationsDir);
   }
+  console.log(`Found migration files: ${migrationFiles.join(", ")}`);
 
-  const migrationSql = fs.readFileSync(migrationPath, "utf-8");
-  const statements = migrationSql
-    .split("--> statement-breakpoint")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+  for (const file of migrationFiles) {
+    const migrationPath = path.join(migrationsDir, file);
+    const migrationSql = fs.readFileSync(migrationPath, "utf-8");
+    const statements = migrationSql
+      .split("--> statement-breakpoint")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
-  console.log(`Applying ${statements.length} migration statements to Neon...`);
+    console.log(`Applying ${statements.length} migration statements from ${file}...`);
 
-  for (let i = 0; i < statements.length; i++) {
-    const stmt = statements[i];
-    try {
-      // Execute each statement via neon raw sql query
-      await sql.query(stmt);
-      console.log(`✓ Statement ${i + 1}/${statements.length} executed.`);
-    } catch (err: any) {
-      // If type already exists or table already exists, log and proceed
-      if (err.message && (err.message.includes("already exists") || err.code === "42710" || err.code === "42P07")) {
-        console.log(`ℹ Statement ${i + 1} skipped (already exists).`);
-      } else {
-        console.error(`✗ Error on statement ${i + 1}:`, err.message);
-        throw err;
+    for (let i = 0; i < statements.length; i++) {
+      const stmt = statements[i];
+      try {
+        // Execute each statement via neon raw sql query
+        await sql.query(stmt);
+        console.log(`✓ [${file}] Statement ${i + 1}/${statements.length} executed.`);
+      } catch (err: any) {
+        // If type/table/column already exists, log and proceed
+        if (
+          err.message &&
+          (err.message.includes("already exists") ||
+            err.message.includes("duplicate") ||
+            err.code === "42710" ||
+            err.code === "42P07" ||
+            err.code === "42701")
+        ) {
+          console.log(`ℹ [${file}] Statement ${i + 1} skipped (already applied).`);
+        } else {
+          console.error(`✗ Error in ${file} statement ${i + 1}:`, err.message);
+          throw err;
+        }
       }
     }
   }

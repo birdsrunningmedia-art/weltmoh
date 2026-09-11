@@ -4,10 +4,19 @@ import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import JSPDF from "jspdf";
 
-import { koboToNaira, formatInvoiceNo, amountInWords, computeTaxBreakdown } from "@/lib/money";
+import {
+  koboToNaira,
+  formatInvoiceNo,
+  amountInWords,
+  computeTaxBreakdown,
+} from "@/lib/money";
 
 import Link from "next/link";
-import { finalizeInvoice, voidInvoice, deleteDraftInvoice } from "../../../app/invoices/actions";
+import {
+  finalizeInvoice,
+  voidInvoice,
+  deleteDraftInvoice,
+} from "../../../app/invoices/actions";
 
 type BusinessSettingsData = {
   companyName: string;
@@ -34,7 +43,12 @@ export type InvoiceDisplayProps = {
   invoiceDetails: string;
   additionalInfo?: string | null;
   taxPercent?: number;
-  items: { qtyLabel: string; description: string; rateKobo: number; amountKobo: number }[];
+  items: {
+    qtyLabel: string;
+    description: string;
+    rateKobo: number;
+    amountKobo: number;
+  }[];
   totalKobo: number;
   isVoid?: boolean;
   voidReason?: string | null;
@@ -85,8 +99,15 @@ export function InvoiceDisplay({
     invoiceNo != null ? formatInvoiceNo(prefix, invoiceNo) : "DRAFT";
 
   const subtotalKobo = items.reduce((sum, it) => sum + it.amountKobo, 0);
-  const taxPercentValue = (typeof taxPercent === "number" && !isNaN(taxPercent)) ? Math.max(0, Math.min(100, Math.round(taxPercent))) : 0;
-  const { subtotal, taxAmount, total: computedTotal } = computeTaxBreakdown(subtotalKobo, taxPercentValue);
+  const taxPercentValue =
+    typeof taxPercent === "number" && !isNaN(taxPercent)
+      ? Math.max(0, Math.min(100, Math.round(taxPercent)))
+      : 0;
+  const {
+    subtotal,
+    taxAmount,
+    total: computedTotal,
+  } = computeTaxBreakdown(subtotalKobo, taxPercentValue);
 
   // Show total from props if it differs (backward compat), else use computed
   const displayTotalKobo = totalKobo;
@@ -108,7 +129,9 @@ export function InvoiceDisplay({
       await finalizeInvoice(id);
       setShowFinalizeModal(false);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Failed to finalize invoice.");
+      setActionError(
+        err instanceof Error ? err.message : "Failed to finalize invoice.",
+      );
       setFinalizing(false);
     }
   }
@@ -119,7 +142,9 @@ export function InvoiceDisplay({
     try {
       await deleteDraftInvoice(id);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Failed to delete draft invoice.");
+      setActionError(
+        err instanceof Error ? err.message : "Failed to delete draft invoice.",
+      );
       setDeleting(false);
     }
   }
@@ -135,7 +160,9 @@ export function InvoiceDisplay({
       await voidInvoice(id, voidReasonInput.trim());
       setShowVoidModal(false);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Failed to void invoice.");
+      setActionError(
+        err instanceof Error ? err.message : "Failed to void invoice.",
+      );
       setVoiding(false);
     }
   }
@@ -160,7 +187,9 @@ export function InvoiceDisplay({
       pdf.save(`${fileBaseName}.pdf`);
     } catch (err) {
       console.error("PDF export failed:", err);
-      alert("Could not generate PDF directly. You can use the Print button to Save as PDF.");
+      alert(
+        "Could not generate PDF directly. You can use the Print button to Save as PDF.",
+      );
     } finally {
       setExportingPdf(false);
     }
@@ -331,12 +360,27 @@ export function InvoiceDisplay({
       {showFinalizeModal && (
         <div className="modal-backdrop no-print">
           <div className="modal-dialog">
-            <h3 style={{ margin: "0 0 10px", color: "#15803d" }}>Finalize Invoice</h3>
+            <h3 style={{ margin: "0 0 10px", color: "#15803d" }}>
+              Finalize Invoice
+            </h3>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.5 }}>
-              Finalizing assigns a <strong>permanent sequential number</strong> (e.g. {prefix}0001) to this invoice, removes the draft watermark, and locks line items from further direct edits.
+              Finalizing assigns a <strong>permanent sequential number</strong>{" "}
+              (e.g. {prefix}0001) to this invoice, removes the draft watermark,
+              and locks line items from further direct edits.
             </p>
-            {actionError && <div className="error" style={{ marginBottom: 12 }}>{actionError}</div>}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+            {actionError && (
+              <div className="error" style={{ marginBottom: 12 }}>
+                {actionError}
+              </div>
+            )}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 18,
+              }}
+            >
               <button
                 type="button"
                 className="btn secondary"
@@ -362,12 +406,26 @@ export function InvoiceDisplay({
       {showDeleteModal && (
         <div className="modal-backdrop no-print">
           <div className="modal-dialog">
-            <h3 style={{ margin: "0 0 10px", color: "#b91c1c" }}>Delete Draft Invoice</h3>
+            <h3 style={{ margin: "0 0 10px", color: "#b91c1c" }}>
+              Delete Draft Invoice
+            </h3>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.5 }}>
-              Are you sure you want to delete this draft invoice? This action cannot be undone.
+              Are you sure you want to delete this draft invoice? This action
+              cannot be undone.
             </p>
-            {actionError && <div className="error" style={{ marginBottom: 12 }}>{actionError}</div>}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+            {actionError && (
+              <div className="error" style={{ marginBottom: 12 }}>
+                {actionError}
+              </div>
+            )}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 18,
+              }}
+            >
               <button
                 type="button"
                 className="btn secondary"
@@ -393,12 +451,19 @@ export function InvoiceDisplay({
       {showVoidModal && (
         <div className="modal-backdrop no-print">
           <div className="modal-dialog">
-            <h3 style={{ margin: "0 0 10px", color: "#b91c1c" }}>Void Finalized Invoice</h3>
+            <h3 style={{ margin: "0 0 10px", color: "#b91c1c" }}>
+              Void Finalized Invoice
+            </h3>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.5 }}>
-              Voiding permanently cancels this invoice. The number <strong>{invoiceDisplayNo}</strong> will remain recorded in history with your audit reason and will never be reused.
+              Voiding permanently cancels this invoice. The number{" "}
+              <strong>{invoiceDisplayNo}</strong> will remain recorded in
+              history with your audit reason and will never be reused.
             </p>
             <div style={{ marginTop: 12 }}>
-              <label htmlFor="voidReason" style={{ fontWeight: 600, fontSize: 13 }}>
+              <label
+                htmlFor="voidReason"
+                style={{ fontWeight: 600, fontSize: 13 }}
+              >
                 Reason for voiding *
               </label>
               <textarea
@@ -411,8 +476,19 @@ export function InvoiceDisplay({
                 style={{ marginTop: 4, width: "100%", padding: 8 }}
               />
             </div>
-            {actionError && <div className="error" style={{ marginBottom: 12 }}>{actionError}</div>}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+            {actionError && (
+              <div className="error" style={{ marginBottom: 12 }}>
+                {actionError}
+              </div>
+            )}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 18,
+              }}
+            >
               <button
                 type="button"
                 className="btn secondary"
@@ -434,185 +510,756 @@ export function InvoiceDisplay({
         </div>
       )}
 
+      {/* Printable Sheet - Matches HTML Template */}
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          maxWidth: "100%",
+          margin: "0 auto",
+          padding: "32px",
+          backgroundColor: "#fff",
+          fontFamily: "Inter, system-ui, sans-serif",
+        }}
+      >
+        {/* Watermark */}
+        {isVoid && (
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+              fontSize: "72px",
+              fontWeight: 700,
+              color: "rgba(220, 38, 38, 0.1)",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          >
+            VOID{voidReason ? ` — ${voidReason}` : ""}
+          </div>
+        )}
+        {isProvisional && (
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+              fontSize: "72px",
+              fontWeight: 700,
+              color: "rgba(21, 128, 61, 0.1)",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          >
+            DRAFT — NOT YET FINALIZED
+          </div>
+        )}
 
-      {/* Printable Sheet */}
-      <div className="invoice-sheet-wrapper">
-        <div className="invoice-sheet" ref={containerRef}>
-          {/* Watermark */}
-          {isVoid ? (
-            <div className="invoice-watermark void">
-              VOID{voidReason ? ` — ${voidReason}` : ""}
-            </div>
-          ) : isProvisional ? (
-            <div className="invoice-watermark">
-              DRAFT — NOT YET FINALIZED
-            </div>
-          ) : null}
-
-          {/* Header */}
-          <div className="invoice-header-row">
-            <div className="invoice-brand-col">
+        {/* Header Section */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "32px",
+            marginBottom: "32px",
+          }}
+        >
+          {/* Logo & Company Info */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: "32px",
+              alignItems: "center",
+              flex: "1 1 420px",
+              minWidth: 0,
+            }}
+          >
+            <div style={{ flexShrink: 0, width: "153px", height: "155px" }}>
               {settings?.logoUrl ? (
                 <img
                   src={settings.logoUrl}
-                  alt={settings.companyName}
-                  style={{ width: 54, height: 54, objectFit: "contain", borderRadius: 8 }}
+                  alt="Company Logo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
                 />
               ) : (
                 <img
                   src="/logo.svg"
                   alt={settings?.companyName || "Weltmoh"}
-                  style={{ width: 56, height: 56, objectFit: "contain" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    maxWidth: "153px",
+                    maxHeight: "155px",
+                  }}
                 />
               )}
-              <div>
-                <div className="invoice-company-title">
-                  {settings?.companyName || "Weltmoh Services Nigeria Ltd"}
-                </div>
-                <div className="invoice-company-tagline">
-                  {settings?.tagline || "Marine Services • Equipment Leasing • General Contract"}
-                </div>
-              </div>
             </div>
-
-            <div
-              className={`invoice-badge-box ${
-                isVoid ? "void" : isProvisional ? "draft" : ""
-              }`}
-            >
-              <div className="invoice-badge-title">INVOICE</div>
-              <div className="invoice-badge-num">
-                {isProvisional ? "DRAFT — PENDING SYNC" : invoiceDisplayNo}
-              </div>
-            </div>
-          </div>
-
-          {/* Office Address & Phone */}
-          {(settings?.addressLines || settings?.phone) && (
-            <div className="invoice-office-info">
-              {settings?.addressLines && <div>{settings.addressLines}</div>}
-              {settings?.phone && <div>Tel: {settings.phone}</div>}
-            </div>
-          )}
-
-          {/* To / Date / L.P.O. Row */}
-          <div className="invoice-meta-grid">
-            <div className="invoice-meta-box">
-              <div className="meta-label">To / Customer:</div>
-              <div style={{ fontWeight: 700, fontSize: 14 }}>{customerName}</div>
-              {customerAddress && <div style={{ color: "#4b5563" }}>{customerAddress}</div>}
-              {customerPhone && <div style={{ color: "#4b5563" }}>Tel: {customerPhone}</div>}
-            </div>
-
-            <div className="invoice-meta-box">
-              <div style={{ marginBottom: 6 }}>
-                <span className="meta-label" style={{ display: "inline", marginRight: 6 }}>
-                  Date:
-                </span>
-                <span style={{ fontWeight: 600 }}>{date}</span>
-              </div>
-              <div>
-                <span className="meta-label" style={{ display: "inline", marginRight: 6 }}>
-                  L.P.O. No:
-                </span>
-                <span style={{ fontWeight: 600 }}>{lpoNumber || "—"}</span>
-              </div>
+            <div>
+              <h1
+                style={{
+                  fontSize: "36px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "0",
+                  lineHeight: "1.2",
+                }}
+              >
+                {settings?.companyName || "Weltmoh Services Nigeria Ltd"}
+              </h1>
+              <p
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "8px 0 0",
+                }}
+              >
+                {settings?.tagline ||
+                  "Marine Services • Equipment Leasing • Procurement"}
+              </p>
             </div>
           </div>
 
-          {/* Invoice Details */}
-          <div className="invoice-details-box">
-            <div className="invoice-details-header">INVOICE DETAILS</div>
-            <div className="invoice-details-body">{invoiceDetails}</div>
-          </div>
-
-          {/* Additional Details (optional, hidden when empty) */}
-          {additionalInfo && additionalInfo.trim().length > 0 && (
-            <div className="invoice-details-box" style={{ marginTop: 14 }}>
-              <div className="invoice-details-header">ADDITIONAL DETAILS</div>
-              <div className="invoice-details-body">{additionalInfo.trim()}</div>
+          {/* Invoice Badge */}
+          <div
+            style={{
+              backgroundColor: "#15803d",
+              borderRadius: "16px",
+              padding: "16px 32px",
+              color: "#fff",
+              textAlign: "right",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: "16px",
+            }}
+          >
+            <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>
+              INVOICE
             </div>
-          )}
-
-          {/* Line Items Table */}
-          <div className="invoice-table-box">
-            <table className="invoice-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 44, textAlign: "center" }}>ITEM</th>
-                  <th style={{ width: 90 }}>QTY</th>
-                  <th>DESCRIPTION OF SERVICES / WORK DONE</th>
-                  <th className="text-right" style={{ width: 120 }}>
-                    RATE
-                  </th>
-                  <th className="text-right" style={{ width: 130 }}>
-                    AMOUNT (₦)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, index) => (
-                  <tr key={index}>
-                    <td style={{ textAlign: "center", color: "#6b7280" }}>{index + 1}</td>
-                    <td>{item.qtyLabel}</td>
-                    <td>{item.description}</td>
-                    <td className="text-right">{koboToNaira(item.rateKobo)}</td>
-                    <td className="text-right" style={{ fontWeight: 600 }}>
-                      {koboToNaira(item.amountKobo)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Subtotal / Tax / Total */}
-          <div className="invoice-total-section" style={{ marginTop: 14, flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
-              <span style={{ fontWeight: 600, color: "#1f2937" }}>Subtotal</span>
-              <span style={{ fontWeight: 600, color: "#1f2937" }}>{subtotalNaira}</span>
+            <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>
+              {isProvisional ? "DRAFT" : invoiceDisplayNo}
             </div>
-            {taxPercentValue > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
-                <span style={{ fontWeight: 600, color: "#1f2937" }}>Tax({taxPercentValue}%)</span>
-                <span style={{ fontWeight: 600, color: "#1f2937" }}>{taxNaira}</span>
-              </div>
-            )}
-            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 120 }}>
-              <span style={{ fontWeight: 800, fontSize: 16, color: "#15803d" }}>Total</span>
-              <span style={{ fontWeight: 800, fontSize: 16, color: "#15803d" }}>{totalNaira}</span>
-            </div>
-          </div>
-
-          {/* Amount In Words */}
-          <div className="invoice-words-box">
-            <strong>Amount in words:</strong> {wordsText}
-          </div>
-
-          {/* Bank Payment Details */}
-          {(settings?.bankName || settings?.bankAccountName || settings?.bankAccountNumber) && (
-            <div className="invoice-bank-box">
-              <strong style={{ color: "#15803d" }}>Please make payment to:</strong>
-              <div style={{ marginTop: 4 }}>
-                {settings.bankName && <div>Bank: <strong>{settings.bankName}</strong></div>}
-                {settings.bankAccountName && <div>Account Name: <strong>{settings.bankAccountName}</strong></div>}
-                {settings.bankAccountNumber && <div>Account Number: <strong>{settings.bankAccountNumber}</strong></div>}
-              </div>
-            </div>
-          )}
-
-          {/* Signatures */}
-          <div className="invoice-signatures">
-            <div className="invoice-sig-line">Customer&apos;s Sign</div>
-            <div className="invoice-sig-line">Manager&apos;s Sign</div>
-          </div>
-
-          {/* Footer Note */}
-          <div className="invoice-footer-note">
-            {settings?.footerNote ||
-              "Services rendered as per agreed contract terms. Thanks, please call again."}
           </div>
         </div>
+
+        {/* Billed By / Billed To / Issue Date Row */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "24px",
+            marginBottom: "32px",
+          }}
+        >
+          {/* Billed By */}
+          <div
+            style={{
+              backgroundColor: "#15803d1a",
+              borderRadius: "16px",
+              padding: "16px",
+              flex: "1 1 280px",
+              minWidth: 0,
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#15803d",
+                margin: "0 0 8px",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+              }}
+            >
+              Billed by:
+            </h3>
+            <p
+              style={{
+                fontSize: "18px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              {settings?.companyName || "Weltmoh Services Nigeria Limited."}
+            </p>
+            <p
+              style={{
+                fontSize: "18px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              {settings?.addressLines ||
+                "28 Warri Sapele Road, Warri Boatyard, Warri Delta State."}
+            </p>
+            <p
+              style={{
+                fontSize: "18px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              07052883191, 08102347354
+            </p>
+          </div>
+
+          {/* Billed To */}
+          <div
+            style={{
+              backgroundColor: "#15803d1a",
+              borderRadius: "16px",
+              padding: "16px",
+              flex: "1 1 280px",
+              minWidth: 0,
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#15803d",
+                margin: "0 0 8px",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+              }}
+            >
+              Billed to:
+            </h3>
+            <p
+              style={{
+                fontSize: "20px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              {customerName}
+            </p>
+            <p
+              style={{
+                fontSize: "20px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              {customerAddress || ""}
+            </p>
+          </div>
+
+          {/* Issue Date */}
+          <div style={{ flex: "0 1 220px", minWidth: 0 }}>
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#000",
+                margin: "0 0 8px",
+              }}
+            >
+              Issue Date:
+            </h3>
+            <p
+              style={{
+                fontSize: "20px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+              }}
+            >
+              {date}
+            </p>
+          </div>
+        </div>
+
+        {/* Invoice Details Box */}
+        <div
+          style={{
+            backgroundColor: "#15803d1a",
+            borderRadius: "16px",
+            padding: "16px",
+            marginBottom: "32px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              color: "#15803d",
+              margin: "0 0 8px",
+              textDecoration: "underline",
+              textUnderlineOffset: "4px",
+            }}
+          >
+            Invoice Details:
+          </h3>
+          <p
+            style={{
+              fontSize: "16px",
+              fontWeight: 400,
+              margin: "0",
+              color: "#000",
+              lineHeight: "1.5",
+            }}
+          >
+            {invoiceDetails}
+          </p>
+        </div>
+
+        {/* Additional Details Box (if present) */}
+        {additionalInfo && additionalInfo.trim().length > 0 && (
+          <div
+            style={{
+              backgroundColor: "#15803d1a",
+              borderRadius: "16px",
+              padding: "16px",
+              marginBottom: "32px",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#15803d",
+                margin: "0 0 8px",
+                textDecoration: "underline",
+                textUnderlineOffset: "4px",
+              }}
+            >
+              Additional Details:
+            </h3>
+            <p
+              style={{
+                fontSize: "16px",
+                fontWeight: 400,
+                margin: "0",
+                color: "#000",
+                lineHeight: "1.5",
+              }}
+            >
+              {additionalInfo.trim()}
+            </p>
+          </div>
+        )}
+
+        {/* Line Items Table */}
+        <div
+          style={{
+            backgroundColor: "#e8f3ec",
+            borderRadius: "16px",
+            borderBottom: "4px solid #15803d",
+            overflow: "hidden",
+            marginBottom: "32px",
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "16px",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#15803d", color: "#fff" }}>
+                <th
+                  style={{
+                    padding: "15px 8px",
+                    textAlign: "center",
+                    fontWeight: 700,
+                    fontSize: "24px",
+                    color: "#fff",
+                  }}
+                >
+                  ITEM
+                </th>
+                <th
+                  style={{
+                    padding: "15px 8px",
+                    textAlign: "left",
+                    fontWeight: 700,
+                    fontSize: "24px",
+                    color: "#fff",
+                  }}
+                >
+                  QTY
+                </th>
+                <th
+                  style={{
+                    padding: "15px 8px",
+                    textAlign: "left",
+                    fontWeight: 700,
+                    fontSize: "24px",
+                    color: "#fff",
+                  }}
+                >
+                  DESCRIPTION OF SERVICE / WORK DONE
+                </th>
+                <th
+                  style={{
+                    padding: "15px 8px",
+                    textAlign: "right",
+                    fontWeight: 700,
+                    fontSize: "24px",
+                    color: "#fff",
+                  }}
+                >
+                  RATE
+                </th>
+                <th
+                  style={{
+                    padding: "15px 8px",
+                    textAlign: "right",
+                    fontWeight: 700,
+                    fontSize: "24px",
+                    color: "#fff",
+                  }}
+                >
+                  AMOUNT
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => (
+                <tr key={index}>
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "center",
+                      color: "#374151",
+                      backgroundColor: "#f0fdf4",
+                      border: "1px solid #d1d5db",
+                    }}
+                  >
+                    {index + 1}
+                  </td>
+
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "center",
+                      color: "#374151",
+                      backgroundColor: "#f0fdf4",
+                      border: "1px solid #d1d5db",
+                    }}
+                  >
+                    {item.qtyLabel}
+                  </td>
+
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "left",
+                      color: "#1f2937",
+                      backgroundColor: "#f0fdf4",
+                      border: "1px solid #d1d5db",
+                    }}
+                  >
+                    {item.description}
+                  </td>
+
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "right",
+                      color: "#1f2937",
+                      backgroundColor: "#f0fdf4",
+                      border: "1px solid #d1d5db",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {koboToNaira(item.rateKobo)}
+                  </td>
+
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "right",
+                      color: "#111827",
+                      backgroundColor: "#f0fdf4",
+                      fontWeight: 600,
+                      border: "1px solid #d1d5db",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {koboToNaira(item.amountKobo)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Totals & Bank Info Section */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "32px",
+            marginBottom: "32px",
+          }}
+        >
+          {/* Bank Details */}
+          <div
+            style={{
+              backgroundColor: "#e8f3ec",
+              borderRadius: "16px",
+              padding: "16px",
+              flex: "1 1 260px",
+              minWidth: 0,
+            }}
+          >
+            <div style={{ marginBottom: "24px" }}>
+              <p
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "0 0 8px",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "4px",
+                }}
+              >
+                Bank Name:
+              </p>
+              <p
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 400,
+                  margin: "0",
+                  color: "#000",
+                }}
+              >
+                {settings?.bankName || "Union Bank"}
+              </p>
+            </div>
+            <div style={{ marginBottom: "24px" }}>
+              <p
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "0 0 8px",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "4px",
+                }}
+              >
+                Account Name:
+              </p>
+              <p
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 400,
+                  margin: "0",
+                  color: "#000",
+                }}
+              >
+                {settings?.bankAccountName || "WELTMORE SERVICES NIGERIA LTD"}
+              </p>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "0 0 8px",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "4px",
+                }}
+              >
+                Account Number:
+              </p>
+              <p
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 400,
+                  margin: "0",
+                  color: "#000",
+                }}
+              >
+                {settings?.bankAccountNumber || "0011223344"}
+              </p>
+            </div>
+          </div>
+
+          {/* Amount in Words & Signatures */}
+          <div
+            style={{
+              flex: "2 1 320px",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#e8f3ec",
+                borderRadius: "16px",
+                padding: "16px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#15803d",
+                  margin: "0",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "4px",
+                }}
+              >
+                Amount in words:
+              </p>
+              <p
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  margin: "8px 0 0",
+                  color: "#000",
+                }}
+              >
+                {wordsText}
+              </p>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+              <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+                <div style={{ minHeight: "61px", marginBottom: "8px" }} />
+                <div style={{ borderTop: "2px solid #000", paddingTop: "8px" }}>
+                  <p
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: 700,
+                      margin: "0",
+                      color: "#000",
+                    }}
+                  >
+                    Customer's Signature
+                  </p>
+                </div>
+              </div>
+              <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+                <div style={{ minHeight: "61px", marginBottom: "8px" }} />
+                <div style={{ borderTop: "2px solid #000", paddingTop: "8px" }}>
+                  <p
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: 700,
+                      margin: "0",
+                      color: "#000",
+                    }}
+                  >
+                    Manager's Signature
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Totals Box */}
+          <div
+            style={{
+              backgroundColor: "#e8f3ec",
+              borderTop: "4px solid #15803d",
+              borderRadius: "16px",
+              
+              flex: "1 1 280px",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "24px",
+                  padding: "16px",
+                }}
+              >
+                <span
+                  style={{ fontSize: "20px", fontWeight: 400, color: "#000" }}
+                >
+                  Subtotal
+                </span>
+                <span
+                  style={{ fontSize: "20px", fontWeight: 700, color: "#000" }}
+                >
+                  {subtotalNaira}
+                </span>
+              </div>
+              {taxPercentValue > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "24px",
+                    padding: "16px",
+                  }}
+                >
+                  <span
+                    style={{ fontSize: "20px", fontWeight: 400, color: "#000" }}
+                  >
+                    Tax({taxPercentValue}%)
+                  </span>
+                  <span
+                    style={{ fontSize: "20px", fontWeight: 700, color: "#000" }}
+                  >
+                    {taxNaira}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                backgroundColor: "#15803d",
+                color: "#fff",
+                padding: "16px",
+                display: "flex",
+                justifyContent: "space-between",
+                borderRadius: "0 0 16px 16px"
+              }}
+            >
+              <span style={{ fontSize: "24px", fontWeight: 800 }}>Total</span>
+              <span style={{ fontSize: "24px", fontWeight: 800 }}>
+                {totalNaira}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Note */}
+        <p
+          style={{
+            fontSize: "20px",
+            fontWeight: 400,
+            color: "#15803d",
+            margin: "0",
+            textAlign: "center",
+          }}
+        >
+          {settings?.footerNote ||
+            "Services rendered as per agreed contract terms"}
+        </p>
       </div>
     </div>
   );
