@@ -89,6 +89,7 @@ export default async function InvoiceDetailPage({ params }: PageProps) {
         voidReason={invoice.voidReason}
         canVoid={canVoid}
         canEdit={canEdit}
+        signatory={invoice.signatory}
         settings={settings}
       />
     </div>

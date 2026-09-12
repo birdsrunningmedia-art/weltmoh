@@ -79,6 +79,7 @@ export default async function InvoiceEditPage({ params }: PageProps) {
             invoiceDetails: invoice.invoiceDetails,
             additionalInfo: invoice.additionalInfo ?? "",
             taxPercent: invoice.taxPercent ?? 0,
+            signatory: (invoice.signatory as "owner" | "manager") ?? undefined,
             items: formattedItems,
           }}
         />

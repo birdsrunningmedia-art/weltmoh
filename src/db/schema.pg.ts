@@ -71,6 +71,7 @@ export const invoices = pgTable(
     totalKobo: bigint("total_kobo", { mode: "number" }).notNull(),
     isVoid: boolean("is_void").notNull().default(false),
     voidReason: text("void_reason"),
+    signatory: text("signatory"), // "owner" | "manager"
     supersedesInvoiceId: text("supersedes_invoice_id"),
     createdById: text("created_by_id")
       .notNull()

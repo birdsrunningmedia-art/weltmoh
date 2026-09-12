@@ -54,6 +54,7 @@ export type InvoiceDisplayProps = {
   voidReason?: string | null;
   canVoid?: boolean;
   canEdit?: boolean;
+  signatory?: string | null;
   settings: BusinessSettingsData | null;
 };
 
@@ -75,6 +76,7 @@ export function InvoiceDisplay({
   voidReason,
   canVoid,
   canEdit,
+  signatory,
   settings,
 }: InvoiceDisplayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1156,7 +1158,19 @@ export function InvoiceDisplay({
                 </div>
               </div>
               <div style={{ flex: "1 1 180px", minWidth: 0 }}>
-                <div style={{ minHeight: "61px", marginBottom: "8px" }} />
+                <div style={{ minHeight: "61px", marginBottom: "8px" }}>
+                  {signatory && (
+                    <img
+                      src={`/signature-${signatory}.png`}
+                      alt={`${signatory === "owner" ? "Owner" : "Manager"}'s Signature`}
+                      style={{
+                        maxHeight: "60px",
+                        maxWidth: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  )}
+                </div>
                 <div style={{ borderTop: "2px solid #000", paddingTop: "8px" }}>
                   <p
                     style={{

@@ -33,6 +33,7 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
   const [invoiceDetails, setInvoiceDetails] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [taxPercent, setTaxPercent] = useState("0");
+  const [signatory, setSignatory] = useState<"owner" | "manager" | "">("")
   const [items, setItems] = useState<LineItem[]>([emptyItem()]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -94,6 +95,7 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
         invoiceDetails,
         additionalInfo: additionalInfo.trim() || undefined,
         taxPercent: Number(taxPercent) || 0,
+        signatory: signatory as "owner" | "manager",
         items: parsedItems,
       });
       // Server Action redirects on success — if we reach here, navigate manually
@@ -194,6 +196,23 @@ export function InvoiceCreateForm({ customers }: { customers: Customer[] }) {
           onChange={(e) => setTaxPercent(e.target.value)}
           style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
         />
+      </div>
+
+      {/* Signatory */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="signatory">Signatory *</label>
+        <select
+          id="signatory"
+          name="signatory"
+          value={signatory}
+          onChange={(e) => setSignatory(e.target.value as "owner" | "manager" | "")}
+          required
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        >
+          <option value="">— Select signatory —</option>
+          <option value="owner">Owner</option>
+          <option value="manager">Manager</option>
+        </select>
       </div>
 
       {/* Line Items */}

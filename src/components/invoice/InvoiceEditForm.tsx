@@ -35,6 +35,7 @@ export type InvoiceEditFormProps = {
     invoiceDetails: string;
     additionalInfo?: string;
     taxPercent?: number;
+    signatory?: "owner" | "manager";
     items: LineItem[];
   };
 };
@@ -52,6 +53,7 @@ export function InvoiceEditForm({
   const [invoiceDetails, setInvoiceDetails] = useState(initialData.invoiceDetails);
   const [additionalInfo, setAdditionalInfo] = useState(initialData.additionalInfo || "");
   const [taxPercent, setTaxPercent] = useState(String(initialData.taxPercent ?? 0));
+  const [signatory, setSignatory] = useState<"owner" | "manager" | "">(initialData.signatory ?? "");
   const [items, setItems] = useState<LineItem[]>(
     initialData.items.length > 0 ? initialData.items : [emptyItem()],
   );
@@ -113,6 +115,7 @@ export function InvoiceEditForm({
         invoiceDetails,
         additionalInfo: additionalInfo.trim() || undefined,
         taxPercent: Number(taxPercent) || 0,
+        signatory: signatory as "owner" | "manager",
         items: parsedItems,
       });
 
@@ -223,6 +226,23 @@ export function InvoiceEditForm({
           onChange={(e) => setTaxPercent(e.target.value)}
           style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
         />
+      </div>
+
+      {/* Signatory */}
+      <div style={{ marginBottom: 12 }}>
+        <label htmlFor="signatory">Signatory *</label>
+        <select
+          id="signatory"
+          name="signatory"
+          value={signatory}
+          onChange={(e) => setSignatory(e.target.value as "owner" | "manager" | "")}
+          required
+          style={{ display: "block", width: "100%", padding: "6px 8px", marginTop: 4 }}
+        >
+          <option value="">— Select signatory —</option>
+          <option value="owner">Owner</option>
+          <option value="manager">Manager</option>
+        </select>
       </div>
 
       {/* Line Items */}

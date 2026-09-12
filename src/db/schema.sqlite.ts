@@ -66,6 +66,7 @@ export const invoices = sqliteTable(
     totalKobo: integer("total_kobo").notNull(),
     isVoid: integer("is_void", { mode: "boolean" }).notNull().default(false),
     voidReason: text("void_reason"),
+    signatory: text("signatory"), // "owner" | "manager"
     supersedesInvoiceId: text("supersedes_invoice_id"),
     createdById: text("created_by_id")
       .notNull()

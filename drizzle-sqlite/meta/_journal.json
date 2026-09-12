@@ -15,6 +15,13 @@
       "when": 1788876606283,
       "tag": "0001_faithful_lockheed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789187009738,
+      "tag": "0002_white_absorbing_man",
+      "breakpoints": true
     }
   ]
 }

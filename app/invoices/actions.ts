@@ -22,6 +22,7 @@ type CreateInvoiceInput = {
   invoiceDetails: string;
   additionalInfo?: string;
   taxPercent?: number;
+  signatory: "owner" | "manager";
   items: LineItemInput[];
 };
 
@@ -37,10 +38,13 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<void> {
   const user = await requireUser();
 
   // Validate required fields
-  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, items } = input;
+  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, signatory, items } = input;
 
   if (!customerId || typeof customerId !== "string") {
     throw new Error("Customer is required.");
+  }
+  if (signatory !== "owner" && signatory !== "manager") {
+    throw new Error("Signatory must be 'owner' or 'manager'.");
   }
   if (!date || typeof date !== "string") {
     throw new Error("Date is required.");
@@ -100,6 +104,7 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<void> {
       additionalInfo: (additionalInfo && typeof additionalInfo === "string" && additionalInfo.trim().length > 0) ? additionalInfo.trim() : null,
       taxPercent: parsedTaxPercent,
       totalKobo,
+      signatory,
       isVoid: false,
       voidReason: null,
       supersedesInvoiceId: null,
@@ -156,10 +161,13 @@ export async function updateInvoice(
     throw new Error("Voided invoices cannot be edited.");
   }
 
-  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, items } = input;
+  const { customerId, date, lpoNumber, invoiceDetails, additionalInfo, taxPercent, signatory, items } = input;
 
   if (!customerId || typeof customerId !== "string") {
     throw new Error("Customer is required.");
+  }
+  if (signatory !== "owner" && signatory !== "manager") {
+    throw new Error("Signatory must be 'owner' or 'manager'.");
   }
   if (!date || typeof date !== "string") {
     throw new Error("Date is required.");
@@ -210,6 +218,7 @@ export async function updateInvoice(
       additionalInfo: (additionalInfo && typeof additionalInfo === "string" && additionalInfo.trim().length > 0) ? additionalInfo.trim() : null,
       taxPercent: parsedTaxPercent,
       totalKobo,
+      signatory,
     })
     .where(eq(invoices.id, invoiceId))
     .run();
